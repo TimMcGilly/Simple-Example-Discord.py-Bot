@@ -20,10 +20,6 @@ logger.addHandler(handler)
 
 class Bot(commands.Bot):
     def __init__(self, db):
-        """
-
-        :type pool: asyncpg.pool
-        """
         super().__init__(command_prefix=self.get_prefix, description="Simple example discord.py command bot")
         self.db = db
 
@@ -36,12 +32,10 @@ class Bot(commands.Bot):
     async def on_message(self, message):
         print('Message from {0.author}: {0.content}'.format(message))
 
-        try:
-            await self.db.execute('''INSERT INTO members(discord_id, name, dob) VALUES($1, $2, $3)''',
+        await self.db.execute('''INSERT INTO members(discord_id, name, dob) VALUES($1, $2, $3) ON CONFLICT (discord_id) DO NOTHING ''',
                               str(message.author.id), message.author.name, message.created_at)
-        except asyncpg.exceptions.UniqueViolationError:
-            _ = 1
 
+        # Adds message as new row to message table in database
         await self.db.execute('''INSERT INTO messages(discord_id, content, dob) VALUES ($1, $2, $3)''',
                               str(message.author.id), message.content, message.created_at)
 
