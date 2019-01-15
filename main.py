@@ -1,11 +1,9 @@
 import asyncio
+import logging
 
 from discord.ext import commands
 
 import config
-import logging
-import asyncpg
-from db import create_tables
 
 logger = logging.getLogger('discord')
 
@@ -19,9 +17,8 @@ logger.addHandler(handler)
 
 
 class Bot(commands.Bot):
-    def __init__(self, db):
+    def __init__(self):
         super().__init__(command_prefix=self.get_prefix, description="Simple example discord.py command bot")
-        self.db = db
 
     async def get_prefix(self, message):
         return "!"
@@ -31,14 +28,6 @@ class Bot(commands.Bot):
 
     async def on_message(self, message):
         print('Message from {0.author}: {0.content}'.format(message))
-
-        await self.db.execute('''INSERT INTO members(discord_id, name, dob) VALUES($1, $2, $3) ON CONFLICT (discord_id) DO NOTHING ''',
-                              str(message.author.id), message.author.name, message.created_at)
-
-        # Adds message as new row to message table in database
-        await self.db.execute('''INSERT INTO messages(discord_id, content, dob) VALUES ($1, $2, $3)''',
-                              str(message.author.id), message.content, message.created_at)
-
         await self.process_commands(message)
 
     async def load_extensions(self, names):
@@ -47,19 +36,13 @@ class Bot(commands.Bot):
 
 
 async def run():
-    # Creates postrgesql connection pool
-    db = await asyncpg.create_pool(**config.postgresqlCredentials)
-
-    await create_tables(db)
-
-    bot = Bot(db)
+    bot = Bot()
     # write general bot commands here
     await bot.load_extensions(["cogs.commands"])
 
     try:
         await bot.start(config.token)
     except KeyboardInterrupt:
-        await db.close()
         await bot.logout()
 
 

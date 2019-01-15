@@ -8,11 +8,3 @@ There are a few steps required to setup the discord bot:
 
 pip install -U -r requirements.txt
 
-3. **Create PostgreSQL database**
-
-You will need PostgreSQL installed and then type into the `psql` tool (on windows this is installed as `SQL Shell`):
-```sql
-CREATE ROLE discord WITH LOGIN PASSWORD 'discordpw';
-CREATE DATABASE SimpleExampleDiscordBot OWNER discord;
-```
-
