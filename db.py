@@ -5,7 +5,7 @@ async def create_tables(db):
         '''
         CREATE TABLE IF NOT EXISTS members(
             id serial PRIMARY KEY,
-            discord_id text,
+            discord_id text UNIQUE,
             name text,
             dob date
         ) ''',
